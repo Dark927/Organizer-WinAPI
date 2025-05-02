@@ -1,5 +1,1 @@
-﻿  DialogHandler.cpp
-  Main.cpp
-D:\ZxcCodding\Organizer\Organizer\Main.cpp(251,19): warning C4244: '=': conversion from 'WPARAM' to 'int', possible loss of data
-  Generating Code...
-  Organizer.vcxproj -> D:\ZxcCodding\Organizer\Organizer\x64\Debug\Organizer.exe
+﻿

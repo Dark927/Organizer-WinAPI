@@ -129,21 +129,30 @@
   <ItemGroup>
     <ClCompile Include="Alarm.cpp" />
     <ClCompile Include="AppStyles.cpp" />
+    <ClCompile Include="ContactBook.cpp" />
+    <ClCompile Include="ContactBookDialog.cpp" />
+    <ClCompile Include="ContactInputDialog.cpp" />
     <ClCompile Include="DataStorage.cpp" />
+    <ClCompile Include="DefaultDataSets.h" />
     <ClCompile Include="DialogHandler.cpp" />
     <ClCompile Include="Event.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MenuHelpers.cpp" />
     <ClCompile Include="UIHelpers.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Alarm.h" />
     <ClInclude Include="AppStyles.h" />
+    <ClInclude Include="ContactBook.h" />
+    <ClInclude Include="ContactBookDialog.h" />
+    <ClInclude Include="ContactInputDialog.h" />
     <ClInclude Include="DataStorage.h" />
     <ClInclude Include="DialogHandler.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="EventManager.h" />
+    <ClInclude Include="MenuHelpers.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="UIHelpers.h" />
     <ClInclude Include="Utils.h" />

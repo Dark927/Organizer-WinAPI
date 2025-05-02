@@ -9,6 +9,7 @@
 #include "AppStyles.h"
 #include "EventManager.h"              
 #include "DialogHandler.h"
+#include "ContactBookDialog.h"
 #include "UIHelpers.h"
 #pragma comment(lib, "comctl32.lib")
 
@@ -30,12 +31,13 @@
 
 HINSTANCE hInst;
 LPCTSTR szWindowClass = _T("QWERTY");
-LPCTSTR szTitle = _T("Event Scheduler");
+LPCTSTR szTitle = _T("Organizer");
 WNDPROC OriginalTitleProc = NULL;
+
 HWND hTitle;
 const char* mainTitle = "ORGANIZER";
 bool themeInitialized = false;
-int currentTheme = THEME_SYSTEM; // Default to system theme
+int currentTheme = THEME_SYSTEM;
 
 // >> Functions Prototypes 
 
@@ -182,7 +184,7 @@ void CreateMainButtons(int clientHeight, HWND& hWnd, int clientWidth)
 	int buttonHeight = 45;
 	int buttonSpacing = 20;
 	int totalButtonsHeight = (buttonHeight * 2) + buttonSpacing;
-	int buttonsStartY = (clientHeight - totalButtonsHeight) / 2 + 30; // Offset from center
+	int buttonsStartY = (clientHeight - totalButtonsHeight) / 2 - 50; // Offset from center
 
 	if (!themeInitialized)
 	{
@@ -242,7 +244,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case CONTACTS_BUTTON_ID:
-			MessageBox(hWnd, _T("Phone Book dialog will be implemented here."), _T("Info"), MB_OK);
+			ContactBookDialog::Show(hWnd, hInst, currentTheme);
 			break;
 
 		case THEME_LIGHT: case THEME_DARK: case THEME_SYSTEM:

@@ -40,6 +40,12 @@
     <Filter Include="Source Files\Models\Visual">
       <UniqueIdentifier>{7d6bd919-4c7c-44c5-acfd-580032b0e9ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Components\ContactBook">
+      <UniqueIdentifier>{52bb6f5c-fcb3-4d5e-8825-a5b729f61233}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Models\ContactBook">
+      <UniqueIdentifier>{08d602d5-bc00-4993-9aef-d273bb6c60ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -69,6 +75,21 @@
     <ClCompile Include="UIHelpers.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="ContactBook.cpp">
+      <Filter>Source Files\Components\ContactBook</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactBookDialog.cpp">
+      <Filter>Source Files\Components\ContactBook</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactInputDialog.cpp">
+      <Filter>Source Files\Components\ContactBook</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultDataSets.h">
+      <Filter>Header Files\Models\ContactBook</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuHelpers.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -97,6 +118,18 @@
     </ClInclude>
     <ClInclude Include="UIHelpers.h">
       <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactBook.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactInputDialog.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactBookDialog.h">
+      <Filter>Header Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuHelpers.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
