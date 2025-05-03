@@ -1,39 +1,55 @@
 #pragma once
 #include "Event.h"
 #include <vector>
+#include <string>
 
-class EventManager {
+class EventsManager
+{
 public:
-    // Add an event to the event list
-    void addEvent(const Event& event);
+    // Event management
+    void AddEvent(const Event& event);
+    void DeleteEvent(size_t index);
+    void MarkCompleted(size_t index, bool completed);
+    void ClearPastDueEvents();
+    void UpdateEventsStatus();
 
-    // Delete an event by its index
-    void deleteEvent(int eventId);
+    // Recurring events
+    void ProcessRecurringEvents();
 
-    // Update an event at the given index
-    void updateEvent(int eventId, const Event& event);
+    // Sorting
+    enum SortCriteria { Name, Deadline, Importance, CreationDate };
+    void SortEvents(SortCriteria criteria, bool ascending = true);
 
-    // Get all events
-    std::vector<Event> getAllEvents() const;
+    // Searching
+    std::vector<Event> SearchByName(const std::wstring& name);
+    std::vector<Event> SearchByDate(const SYSTEMTIME& date);
 
-    // Find events by date
-    std::vector<Event> findEventsByDate(const std::tm& date) const;
+    // Statistics
+    struct EventStats
+    {
+        int total;
+        int completed;
+        float completionRate;
+    };
+    EventStats GetWeeklyStats();
+    EventStats GetMonthlyStats();
 
-    // Find events by name
-    std::vector<Event> findEventsByName(const std::string& name) const;
+    // Persistence
+    bool LoadEvents(const std::wstring& filePath);
+    bool SaveEvents();
+    bool SaveEvents(const std::wstring& filePath);
 
-    // Sort events by deadline
-    void sortEventsByDeadline();
+    // Alarm
+    void CheckAlarms();
 
-    // Remove events that are in the past
-    void removePastEvents();
-
-    // Update events based on their current status
-    void updateEvents();
-
-    // Clear all completed events
-    void clearAllCompletedEvents();
+    // Access
+    const std::vector<Event>& GetAllEvents();
 
 private:
-    std::vector<Event> events;  // Vector to store events
+    std::vector<Event> events;
+    std::wstring dataFilePath;
+
+    void Initialize();
+    bool IsPastDue(const Event& event);
+    void UpdateSingleEventStatus(Event& event);
 };

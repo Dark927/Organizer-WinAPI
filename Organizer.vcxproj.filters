@@ -22,9 +22,6 @@
     <Filter Include="Source Files\Models\Storages">
       <UniqueIdentifier>{1178ddfb-7dc3-459e-9abe-52b3565f6278}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Models\Events">
-      <UniqueIdentifier>{4f6360a1-8378-47cb-b49a-ba64f83fb645}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{03778a7f-5f99-4052-8fb1-26014a40e2b5}</UniqueIdentifier>
     </Filter>
@@ -46,25 +43,28 @@
     <Filter Include="Header Files\Models\ContactBook">
       <UniqueIdentifier>{08d602d5-bc00-4993-9aef-d273bb6c60ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Components\EventManager">
+      <UniqueIdentifier>{8bc23ea7-bc91-4435-8745-b3f60c515aa5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Dialogs">
+      <UniqueIdentifier>{221deae7-7476-4782-ae4b-31b9d1c930ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dialogs">
+      <UniqueIdentifier>{cd0135a7-1565-4087-b288-45a25c96fcd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dialogs\ContactBook">
+      <UniqueIdentifier>{ac8a2fcf-c5d8-4dec-8174-67475c1cee8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dialogs\EventsManager">
+      <UniqueIdentifier>{5c8f23cc-fd08-4e90-a588-49ec2204b022}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Alarm.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Event.cpp">
-      <Filter>Source Files\Models\Events</Filter>
-    </ClCompile>
-    <ClCompile Include="EventManager.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="DialogHandler.cpp">
-      <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="AppStyles.cpp">
       <Filter>Source Files\Models\Visual</Filter>
@@ -75,17 +75,32 @@
     <ClCompile Include="ContactBook.cpp">
       <Filter>Source Files\Components\ContactBook</Filter>
     </ClCompile>
-    <ClCompile Include="ContactBookDialog.cpp">
-      <Filter>Source Files\Components\ContactBook</Filter>
-    </ClCompile>
-    <ClCompile Include="ContactInputDialog.cpp">
-      <Filter>Source Files\Components\ContactBook</Filter>
-    </ClCompile>
     <ClCompile Include="DefaultDataSets.h">
       <Filter>Header Files\Models\ContactBook</Filter>
     </ClCompile>
     <ClCompile Include="MenuHelpers.cpp">
       <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Alarm.cpp">
+      <Filter>Source Files\Components\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="EventManager.cpp">
+      <Filter>Source Files\Components\EventManager</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogHandler.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactBookDialog.cpp">
+      <Filter>Source Files\Dialogs\ContactBook</Filter>
+    </ClCompile>
+    <ClCompile Include="ContactInputDialog.cpp">
+      <Filter>Source Files\Dialogs\ContactBook</Filter>
+    </ClCompile>
+    <ClCompile Include="EventInputDialog.cpp">
+      <Filter>Source Files\Dialogs\EventsManager</Filter>
+    </ClCompile>
+    <ClCompile Include="EventsDialog.cpp">
+      <Filter>Source Files\Dialogs\EventsManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,19 +131,30 @@
     <ClInclude Include="ContactBook.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="ContactInputDialog.h">
+    <ClInclude Include="MenuHelpers.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="ContactBookDialog.h">
-      <Filter>Header Files\Components</Filter>
+      <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="MenuHelpers.h">
-      <Filter>Header Files\Components</Filter>
+    <ClInclude Include="ContactInputDialog.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="EventInputDialog.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="EventsDialog.h">
+      <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Organizer.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="organizer.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

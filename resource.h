@@ -27,6 +27,20 @@
 #define IDC_SORT_BUTTON                 309
 #define IDC_RESET_BUTTON                310
 #define IDD_INSTRUCTIONS_DIALOG         311
+#define IDD_EVENT_INPUT_DIALOG            400
+#define IDC_EVENT_NAME_EDIT               401
+#define IDC_EVENT_DESCRIPTION_EDIT        402
+#define IDC_EVENT_NOTES_EDIT              403
+#define IDC_EVENT_TIME_PICKER             404
+#define IDC_EVENT_IMPORTANCE_EDIT         405
+#define IDC_EVENT_IMPORTANCE_SPIN         406
+#define IDC_EVENT_ALARM_CHECK             407
+#define IDC_EVENT_RECURRING_CHECK         408
+#define IDC_EVENT_RECURRENCE_EDIT         409
+#define IDC_EVENT_RECURRENCE_SPIN         410
+#define IDC_EVENT_NAME_COUNT              411
+#define IDC_EVENT_NOTES_COUNT             412
+#define IDC_EVENT_DESC_COUNT              413
 #define IDC_CONTACTS_CONTACT_LIST       1001
 #define IDC_CONTACTS_ADD_CONTACT        1002
 #define IDC_CONTACTS_DELETE_CONTACT     1003
@@ -48,8 +62,6 @@
 #define IDC_STATIC_VALUE_THEME          1011
 #define ID_CONTACTS_CLOSE               1011
 #define ID_ABOUT_CLOSE                  1012
-#define ID_CREATE_EVENT_BTN             1014
-#define ID_DELETE_EVENT_BTN             1015
 #define IDD_EVENTS_DIALOG               1016
 #define IDC_CONTACT_COUNTRY_COUNT       1017
 #define IDC_FILTER_EDIT                 1017
@@ -60,13 +72,25 @@
 #define IDC_CONTACT_INPUT_COUNTRY       1021
 #define IDC_CONTACT_INPUT_ADDRESS       1022
 #define IDC_CONTACT_INPUT_TAGS          1023
+#define IDC_EVENTS_CALENDAR            2001
+#define IDC_EVENTS_LIST                2002
+#define IDC_EVENT_DETAILS_RICHEDIT     2003
+#define IDC_EVENT_SORT_COMBO           2004
+#define IDC_EVENT_SORT_STATIC          2005
+#define ID_CREATE_EVENT_BTN            2006
+#define ID_DELETE_EVENT_BTN            2007
+#define IDC_EVENT_ALARM_BTN            2008
+#define IDC_EVENT_STATS_BTN            2009
+#define IDC_EVENT_UPDATE_BTN           2010
+#define IDC_EVENT_CLEAR_PAST_BTN       2011
+#define IDI_APP_ICON                    5001
 #define IDC_CONTACT_INPUT_LABEL         65535
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        111
+#define _APS_NEXT_RESOURCE_VALUE        113
 #define _APS_NEXT_COMMAND_VALUE         40005
 #define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           101

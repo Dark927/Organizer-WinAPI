@@ -5,8 +5,9 @@ D:\ZxcCodding\Organizer\Organizer\ContactBookDialog.cpp;D:\ZxcCodding\Organizer\
 D:\ZxcCodding\Organizer\Organizer\ContactInputDialog.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\ContactInputDialog.obj
 D:\ZxcCodding\Organizer\Organizer\DefaultDataSets.h;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\DefaultDataSets.obj
 D:\ZxcCodding\Organizer\Organizer\DialogHandler.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\DialogHandler.obj
-D:\ZxcCodding\Organizer\Organizer\Event.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\Event.obj
+D:\ZxcCodding\Organizer\Organizer\EventInputDialog.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\EventInputDialog.obj
 D:\ZxcCodding\Organizer\Organizer\EventManager.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\EventManager.obj
+D:\ZxcCodding\Organizer\Organizer\EventsDialog.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\EventsDialog.obj
 D:\ZxcCodding\Organizer\Organizer\Main.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\Main.obj
 D:\ZxcCodding\Organizer\Organizer\MenuHelpers.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\MenuHelpers.obj
 D:\ZxcCodding\Organizer\Organizer\UIHelpers.cpp;D:\ZxcCodding\Organizer\Organizer\Organizer\x64\Debug\UIHelpers.obj

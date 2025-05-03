@@ -37,7 +37,7 @@ WNDPROC OriginalTitleProc = NULL;
 HWND hTitle;
 const char* mainTitle = "ORGANIZER";
 bool themeInitialized = false;
-int currentTheme = THEME_SYSTEM;
+int currentTheme = THEME_LIGHT;
 
 // >> Functions Prototypes 
 
@@ -59,8 +59,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	// Initialize common controls (required for DateTimePicker)
 	INITCOMMONCONTROLSEX icex;
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-	icex.dwICC = ICC_DATE_CLASSES;
+	icex.dwICC = ICC_DATE_CLASSES | ICC_WIN95_CLASSES | ICC_USEREX_CLASSES;
 	InitCommonControlsEx(&icex);
+
+	if (!LoadLibrary(TEXT("riched20.dll")))
+	{
+		MessageBoxW(NULL, L"Failed to load RichEdit control", L"Error", MB_ICONERROR);
+		return FALSE;
+	}
 
 	// Register window class
 	MyRegisterClass(hInstance);
@@ -91,12 +97,12 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
+	wcex.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
 
 	return RegisterClassEx(&wcex);
 }

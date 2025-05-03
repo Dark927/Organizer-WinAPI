@@ -134,8 +134,9 @@
     <ClCompile Include="ContactInputDialog.cpp" />
     <ClCompile Include="DefaultDataSets.h" />
     <ClCompile Include="DialogHandler.cpp" />
-    <ClCompile Include="Event.cpp" />
+    <ClCompile Include="EventInputDialog.cpp" />
     <ClCompile Include="EventManager.cpp" />
+    <ClCompile Include="EventsDialog.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MenuHelpers.cpp" />
     <ClCompile Include="UIHelpers.cpp" />
@@ -149,7 +150,9 @@
     <ClInclude Include="ContactInputDialog.h" />
     <ClInclude Include="DialogHandler.h" />
     <ClInclude Include="Event.h" />
+    <ClInclude Include="EventInputDialog.h" />
     <ClInclude Include="EventManager.h" />
+    <ClInclude Include="EventsDialog.h" />
     <ClInclude Include="MenuHelpers.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="UIHelpers.h" />
@@ -159,6 +162,9 @@
     <ResourceCompile Include="Organizer.rc">
       <DeploymentContent>false</DeploymentContent>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="organizer.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
