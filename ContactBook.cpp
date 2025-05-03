@@ -1,87 +1,331 @@
-﻿#include "ContactBook.h"
+﻿#define _CRT_SECURE_NO_WARNINGS
 
+#include "ContactBook.h"
+#include <algorithm>
+#include <sstream>
+#include <fstream>
+#include <locale>
+#include <codecvt>
+
+ContactBook::ContactBook() : capacity(10), count(0), savedCount(0)
+{
+	contacts = new Contact[capacity];
+	savedContacts = new Contact[capacity];
+}
+
+ContactBook::~ContactBook()
+{
+	delete[] contacts;
+	delete[] savedContacts;
+}
+
+void ContactBook::ResizeArray(size_t newCapacity)
+{
+	Contact* newContacts = new Contact[newCapacity];
+	Contact* newSavedContacts = new Contact[newCapacity];
+
+	// Copy existing elements
+	for (size_t i = 0; i < count; i++)
+		newContacts[i] = contacts[i];
+
+	for (size_t i = 0; i < savedCount; i++)
+		newSavedContacts[i] = savedContacts[i];
+
+	delete[] contacts;
+	delete[] savedContacts;
+
+	contacts = newContacts;
+	savedContacts = newSavedContacts;
+	capacity = newCapacity;
+}
 
 void ContactBook::AddContact(const Contact& contact)
 {
-	if (!IsDuplicate(contact))
-	{
-		contacts.push_back(contact);
-	}
+	if (count >= capacity)
+		ResizeArray(capacity * 2);
+
+	contacts[count++] = contact;
 }
 
 void ContactBook::DeleteContact(size_t index)
 {
-	if (index < contacts.size())
-	{
-		contacts.erase(contacts.begin() + index);
-	}
+	if (index >= count) return;
+
+	for (size_t i = index; i < count - 1; i++)
+		contacts[i] = contacts[i + 1];
+
+	count--;
 }
 
 void ContactBook::ToggleFavorite(size_t index)
 {
-	if (index < contacts.size())
-	{
+	if (index < count)
 		contacts[index].isFavorite = !contacts[index].isFavorite;
-	}
 }
 
-void ContactBook::FilterContacts(const std::string& filter)
+void ContactBook::FilterContacts(const std::wstring& filter)
 {
 	currentFilter = filter;
 }
 
-void ContactBook::SortContacts(int sortBy)
+void ContactBook::SortContacts(SortType type)
 {
-	currentSort = sortBy;
-	switch (sortBy)
+	currentSortType = type;
+
+	switch (type)
 	{
-	case 0: // Date
-		/*   std::sort(contacts.begin(), contacts.end(), [](const Contact& a, const Contact& b) {
-			   return CompareSystemTime(&a.addedDate, &b.addedDate) > 0;
-			   });*/
+	case SortType::Country:
+		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
+			{
+				return a.country < b.country;
+			});
 		break;
-	case 1: // Name
-		std::sort(contacts.begin(), contacts.end(), [](const Contact& a, const Contact& b)
+
+	case SortType::Name:
+		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
 			{
 				return a.name < b.name;
 			});
 		break;
-	case 2: // Country
-		std::sort(contacts.begin(), contacts.end(), [](const Contact& a, const Contact& b)
+	case SortType::AddedTime:
+		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
 			{
-				return a.country < b.country;
+				return CompareFileTime(
+					&(FILETIME&)a.addedDate,
+					&(FILETIME&)b.addedDate
+				) > 0;
 			});
 		break;
 	}
 }
 
-bool ContactBook::ValidatePhone(const std::string& phone)
-{
-	// Phone validation implementation
-	return phone.length() >= 7 &&
-		std::count_if(phone.begin(), phone.end(), isdigit) >= 7;
-}
-
 bool ContactBook::IsDuplicate(const Contact& contact)
 {
-	return std::any_of(contacts.begin(), contacts.end(), [&](const Contact& c)
-		{
-			return c.name == contact.name && c.phone == contact.phone;
-		});
+	for (size_t i = 0; i < count; i++)
+	{
+		if (contacts[i].name == contact.name && contacts[i].phone == contact.phone)
+			return true;
+	}
+	return false;
 }
 
-const std::vector<Contact>& ContactBook::GetContacts()
+bool ContactBook::SaveToFile(const std::wstring& filename)
 {
-	return contacts;
+	// Open file in binary mode to prevent any character conversion
+	std::wofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!file.is_open())
+	{
+		return false;
+	}
+
+	// Apply UTF-8 conversion facet
+	std::locale utf8_locale(file.getloc(),
+		new std::codecvt_utf8<wchar_t, 0x10FFFF, std::generate_header>);
+	file.imbue(utf8_locale);
+
+	// Write each contact
+	for (size_t i = 0; i < count; i++)
+	{
+		const Contact& c = contacts[i];
+		file << c.name << L"|"
+			<< c.phone << L"|"
+			<< c.country << L"|"
+			<< c.address << L"|"
+			<< c.tags << L"|"
+			<< c.addedDate.wYear << L"-"
+			<< c.addedDate.wMonth << L"-"
+			<< c.addedDate.wDay
+			<< L"|"
+			<< (c.isFavorite ? L"1" : L"0") << L"\n";
+	}
+
+	// Check for errors
+	if (file.fail())
+	{
+		file.close();
+		return false;
+	}
+
+	currentFilename = filename;
+	file.close();
+	return true;
 }
 
-const Contact& ContactBook::GetContact(size_t index)
+bool ContactBook::SaveToCurrentFile()
+{
+	if (!currentFilename.empty())
+	{
+		return SaveToFile(currentFilename);
+	}
+	return false;
+}
+
+bool ContactBook::ParseContactLine(const std::wstring& line, Contact& contact)
+{
+	const size_t MAX_PARTS = 7;
+	std::wstring parts[MAX_PARTS];
+	size_t partCount = 0;
+
+	std::wstringstream ss(line);
+	std::wstring part;
+
+	while (std::getline(ss, part, L'|') && partCount < MAX_PARTS)
+		parts[partCount++] = part;
+
+	if (partCount != MAX_PARTS)
+		return false;
+
+	contact.name = parts[0];
+	contact.phone = parts[1];
+	contact.country = parts[2];
+	contact.address = parts[3];
+	contact.tags = parts[4];
+	contact.addedDate = StringToSystemTime(parts[5]);
+	contact.isFavorite = (parts[6] == L"1");
+
+	return true;
+}
+
+bool ContactBook::LoadFromFile(const std::wstring& filename)
+{
+	std::wifstream file(filename, std::ios::in | std::ios::binary);
+	if (!file.is_open())
+		return false;
+
+	// Check for UTF-8 BOM and skip it
+	wchar_t bom = 0;
+	file.read(&bom, 1);
+	if (bom != 0xFEFF)
+		file.seekg(0); // No BOM, reset to start
+
+	file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
+
+	Contact tempContacts[1000]; // Adjust size as needed
+	size_t tempCount = 0;
+	bool success = true;
+	std::wstring line;
+
+	while (std::getline(file, line) && tempCount < 1000)
+	{
+		if (ParseContactLine(line, tempContacts[tempCount]))
+		{
+			tempCount++;
+		}
+		else
+		{
+			// Try reading as ANSI if UTF-8 fails
+			file.close();
+			file.open(filename, std::ios::in | std::ios::binary);
+			file.imbue(std::locale(""));
+			tempCount = 0;
+
+			while (std::getline(file, line) && tempCount < 1000)
+			{
+				if (ParseContactLine(line, tempContacts[tempCount]))
+				{
+					tempCount++;
+				}
+				else
+				{
+					success = false;
+					break;
+				}
+			}
+			break;
+		}
+	}
+
+	file.close();
+
+	if (success && tempCount > 0)
+	{
+		// Resize arrays if needed
+		if (tempCount > capacity)
+			ResizeArray(tempCount * 2);
+
+		// Copy to saved contacts first
+		savedCount = tempCount;
+		for (size_t i = 0; i < savedCount; i++)
+			savedContacts[i] = tempContacts[i];
+
+		// Then copy to working contacts
+		count = savedCount;
+		for (size_t i = 0; i < count; i++)
+			contacts[i] = savedContacts[i];
+
+		currentFilename = filename;
+	}
+
+	return success && tempCount > 0;
+}
+
+std::wstring ContactBook::SystemTimeToString(const SYSTEMTIME& st) const
+{
+	wchar_t buffer[64];
+	swprintf(buffer, 64, L"%04d-%02d-%02d %02d:%02d:%02d",
+		st.wYear, st.wMonth, st.wDay,
+		st.wHour, st.wMinute, st.wSecond);
+	return buffer;
+}
+
+SYSTEMTIME ContactBook::StringToSystemTime(const std::wstring& str) const
+{
+	SYSTEMTIME st = { 0 };
+	int year, month, day, hour = 0, minute = 0, second = 0;
+
+	if (swscanf(str.c_str(), L"%d-%d-%d %d:%d:%d",
+		&year, &month, &day, &hour, &minute, &second) >= 3)
+	{
+		st.wYear = year;
+		st.wMonth = month;
+		st.wDay = day;
+		st.wHour = hour;
+		st.wMinute = minute;
+		st.wSecond = second;
+	}
+	else if (swscanf(str.c_str(), L"%d-%d-%d", &year, &month, &day) == 3)
+	{
+		st.wYear = year;
+		st.wMonth = month;
+		st.wDay = day;
+	}
+	else
+	{
+		// If parsing fails, use current time
+		GetLocalTime(&st);
+	}
+
+	return st;
+}
+
+void ContactBook::DiscardChanges()
+{
+	// Restore from saved contacts
+	count = savedCount;
+	for (size_t i = 0; i < count; i++)
+		contacts[i] = savedContacts[i];
+}
+
+void ContactBook::CommitChanges()
+{
+	// Save current state
+	savedCount = count;
+	for (size_t i = 0; i < savedCount; i++)
+		savedContacts[i] = contacts[i];
+}
+
+size_t ContactBook::GetContactCount() const
+{
+	return count;
+}
+
+Contact& ContactBook::GetContact(size_t index) const
 {
 	static Contact empty;
-	return index < contacts.size() ? contacts[index] : empty;
+	return index < count ? contacts[index] : empty;
 }
 
-size_t ContactBook::GetContactCount()
+const Contact* ContactBook::GetContacts() const
 {
-	return contacts.size();
+	return contacts;
 }

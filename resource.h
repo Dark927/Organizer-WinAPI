@@ -36,9 +36,16 @@
 #define ID_ABOUT_CLOSE                  1012
 #define ID_CREATE_EVENT_BTN             1014
 #define ID_DELETE_EVENT_BTN             1015
-#define IDD_EVENTS_DIALOG               1015
-#define IDC_CONTACT_COUNTRY_COUNT       1015
+#define IDD_EVENTS_DIALOG               1016
+#define IDC_CONTACT_COUNTRY_COUNT       1017
 #define IDC_CONTACT_INPUT_LABEL         65535
+#define IDC_CONTACT_INPUT_NAME          1018
+#define IDC_CONTACT_INPUT_PHONE         1019
+#define IDC_CONTACT_INPUT_COUNTRYSEARCH 1020
+#define IDC_CONTACT_INPUT_COUNTRY       1021
+#define IDC_CONTACT_INPUT_ADDRESS       1022
+#define IDC_CONTACT_INPUT_TAGS          1023
+
 
 #define IDR_CONTACT_MENU                300
 #define IDM_HELP_INSTRUCTIONS           301

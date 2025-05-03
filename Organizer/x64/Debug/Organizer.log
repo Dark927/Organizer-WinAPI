@@ -1,1 +1,5 @@
-﻿
+﻿  ContactBook.cpp
+D:\ZxcCodding\Organizer\Organizer\ContactBook.h(22,17): warning C4091: 'static ': ignored on left of 'ContactBook::SortType' when no variable is declared
+  (compiling source file 'ContactBook.cpp')
+  
+  Organizer.vcxproj -> D:\ZxcCodding\Organizer\Organizer\x64\Debug\Organizer.exe

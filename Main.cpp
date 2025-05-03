@@ -108,7 +108,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	// Create main window with a modern look
 	hWnd = CreateWindow(szWindowClass, szTitle,
-		WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME,	// Remove resizable border
+		WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),	// Remove resizable border and maximize box
 		CW_USEDEFAULT, CW_USEDEFAULT, 450, 500,
 		NULL, NULL, hInstance, NULL);
 

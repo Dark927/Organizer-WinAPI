@@ -33,9 +33,9 @@ INT_PTR CALLBACK ContactInputDialog::DialogProc(HWND hDlg, UINT message, WPARAM 
 			hFont = AppStyles::GetDefaultButtonFont();
 
 			// Initialize controls
-			SetDlgItemTextA(hDlg, IDC_CONTACT_NAME, pData->contact->name.c_str());
-			SetDlgItemTextA(hDlg, IDC_CONTACT_PHONE, pData->contact->phone.c_str());
-			SetDlgItemTextA(hDlg, IDC_CONTACT_TAGS, pData->contact->tags.c_str());
+			SetDlgItemTextW(hDlg, IDC_CONTACT_NAME, pData->contact->name.c_str());
+			SetDlgItemTextW(hDlg, IDC_CONTACT_PHONE, pData->contact->phone.c_str());
+			SetDlgItemTextW(hDlg, IDC_CONTACT_TAGS, pData->contact->tags.c_str());
 
 			// Initialize country combo
 			HWND hCountryCombo = GetDlgItem(hDlg, IDC_CONTACT_COUNTRY_COMBO);
@@ -53,7 +53,7 @@ INT_PTR CALLBACK ContactInputDialog::DialogProc(HWND hDlg, UINT message, WPARAM 
 					SendMessageA(hCountryCombo, CB_SETCURSEL, index, 0);
 				}
 				EnableAddressField(hDlg, true);
-				SetDlgItemTextA(hDlg, IDC_CONTACT_ADDRESS, pData->contact->address.c_str());
+				SetDlgItemTextW(hDlg, IDC_CONTACT_ADDRESS, pData->contact->address.c_str());
 			}
 
 			// Apply theme and initialize buttons
@@ -118,11 +118,12 @@ INT_PTR CALLBACK ContactInputDialog::DialogProc(HWND hDlg, UINT message, WPARAM 
 				return TRUE;
 			}
 
-			char buffer[256];
+			const int bufferSize = 256;
+			wchar_t buffer[bufferSize];
 
 			// Validate name
-			GetDlgItemTextA(hDlg, IDC_CONTACT_NAME, buffer, sizeof(buffer));
-			if (strlen(buffer) == 0)
+			GetDlgItemTextW(hDlg, IDC_CONTACT_NAME, buffer, sizeof(buffer));
+			if (wcslen(buffer) == 0)
 			{
 				MessageBoxA(hDlg, "Please enter a name", "Error", MB_ICONERROR);
 				return FALSE;
@@ -130,8 +131,10 @@ INT_PTR CALLBACK ContactInputDialog::DialogProc(HWND hDlg, UINT message, WPARAM 
 			pData->contact->name = buffer;
 
 			// Validate phone
-			GetDlgItemTextA(hDlg, IDC_CONTACT_PHONE, buffer, sizeof(buffer));
-			if (!ValidatePhoneNumber(buffer))
+			GetDlgItemTextW(hDlg, IDC_CONTACT_PHONE, buffer, sizeof(buffer));
+			char* phoneNumberBuffer = new char[bufferSize];
+			WideCharToMultiByte(CP_UTF8, 0, buffer, -1, phoneNumberBuffer, bufferSize, nullptr, nullptr);
+			if (!ValidatePhoneNumber(phoneNumberBuffer))
 			{
 				MessageBoxA(hDlg, "Please enter a valid phone number\nFormat: +[country code] [number] or [number with area code]",
 					"Error", MB_ICONERROR);
@@ -144,7 +147,7 @@ INT_PTR CALLBACK ContactInputDialog::DialogProc(HWND hDlg, UINT message, WPARAM 
 			LRESULT sel = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
 			if (sel != CB_ERR)
 			{
-				SendMessageA(hCombo, CB_GETLBTEXT, sel, (LPARAM)buffer);
+				SendMessageW(hCombo, CB_GETLBTEXT, sel, (LPARAM)buffer);
 				pData->contact->country = buffer;
 			}
 			else
@@ -155,7 +158,7 @@ INT_PTR CALLBACK ContactInputDialog::DialogProc(HWND hDlg, UINT message, WPARAM 
 			// Get address if country is selected
 			if (!pData->contact->country.empty())
 			{
-				GetDlgItemTextA(hDlg, IDC_CONTACT_ADDRESS, buffer, sizeof(buffer));
+				GetDlgItemTextW(hDlg, IDC_CONTACT_ADDRESS, buffer, sizeof(buffer));
 				pData->contact->address = buffer;
 			}
 			else
@@ -164,7 +167,7 @@ INT_PTR CALLBACK ContactInputDialog::DialogProc(HWND hDlg, UINT message, WPARAM 
 			}
 
 			// Get tags
-			GetDlgItemTextA(hDlg, IDC_CONTACT_TAGS, buffer, sizeof(buffer));
+			GetDlgItemTextW(hDlg, IDC_CONTACT_TAGS, buffer, sizeof(buffer));
 			pData->contact->tags = buffer;
 			GetLocalTime(&pData->contact->addedDate);
 			EndDialog(hDlg, ID_CONTACT_CONFIRM);
