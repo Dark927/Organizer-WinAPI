@@ -57,15 +57,62 @@ void ContactBook::DeleteContact(size_t index)
 	count--;
 }
 
-void ContactBook::ToggleFavorite(size_t index)
+bool ContactBook::DeleteContactByReference(const Contact& contactToDelete)
 {
-	if (index < count)
-		contacts[index].isFavorite = !contacts[index].isFavorite;
+	for (size_t i = 0; i < count; i++)
+	{
+		if (contacts[i].id == contactToDelete.id)
+		{
+			for (size_t i = 0; i < count; i++)
+			{
+				if (contacts[i].id == contactToDelete.id)
+				{
+					for (size_t j = i; j < count - 1; j++)
+					{
+						contacts[j] = contacts[j + 1];
+					}
+					count--;
+					break;
+				}
+			}
+
+			return true;
+		}
+	}
+	return false;
 }
 
-void ContactBook::FilterContacts(const std::wstring& filter)
+void ContactBook::ToggleFavorite(const Contact& contact)
+{
+	for (size_t i = 0; i < count; i++)
+	{
+		if (contacts[i].id == contact.id)
+		{
+			contacts[i].isFavorite = !contacts[i].isFavorite;
+			break;
+		}
+	}
+}
+
+Contact* ContactBook::FilterContacts(const std::wstring& filter, size_t& filteredContactsCount)
 {
 	currentFilter = filter;
+
+	// Temporary array for filtered contacts - filter from currently displayed contacts
+	Contact* filtered = new Contact[capacity];
+	size_t filteredCount = 0;
+
+	// Filter currently displayed contacts
+	for (size_t i = 0; i < count; i++)
+	{
+		if (contacts[i].tags.find(filter) != std::wstring::npos)
+		{
+			filtered[filteredCount++] = contacts[i];
+		}
+	}
+
+	filteredContactsCount = filteredCount;
+	return filtered;
 }
 
 void ContactBook::SortContacts(SortType type)
@@ -74,10 +121,16 @@ void ContactBook::SortContacts(SortType type)
 
 	switch (type)
 	{
-	case SortType::Country:
+	case SortType::Favorite:
 		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
 			{
-				return a.country < b.country;
+				// Sort favorites first
+				if (a.isFavorite != b.isFavorite)
+				{
+					return a.isFavorite > b.isFavorite;
+				}
+				// If same favorite status, sort by name
+				return a.name < b.name;
 			});
 		break;
 
@@ -87,6 +140,28 @@ void ContactBook::SortContacts(SortType type)
 				return a.name < b.name;
 			});
 		break;
+
+	case SortType::Phone:
+		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
+			{
+				return a.phone < b.phone;
+			});
+		break;
+
+	case SortType::Country:
+		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
+			{
+				return a.country < b.country;
+			});
+		break;
+
+	case SortType::Address:
+		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
+			{
+				return a.address < b.address;
+			});
+		break;
+
 	case SortType::AddedTime:
 		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
 			{
@@ -94,6 +169,13 @@ void ContactBook::SortContacts(SortType type)
 					&(FILETIME&)a.addedDate,
 					&(FILETIME&)b.addedDate
 				) > 0;
+			});
+		break;
+
+	case SortType::Tags:
+		std::sort(contacts, contacts + count, [](const Contact& a, const Contact& b)
+			{
+				return a.tags < b.tags;
 			});
 		break;
 	}
@@ -107,6 +189,11 @@ bool ContactBook::IsDuplicate(const Contact& contact)
 			return true;
 	}
 	return false;
+}
+
+ContactBook::SortType ContactBook::GetCurrentSortType()
+{
+	return currentSortType;
 }
 
 bool ContactBook::SaveToFile(const std::wstring& filename)
@@ -146,6 +233,7 @@ bool ContactBook::SaveToFile(const std::wstring& filename)
 		return false;
 	}
 
+	CommitChanges();
 	currentFilename = filename;
 	file.close();
 	return true;

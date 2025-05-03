@@ -57,9 +57,6 @@
     <ClCompile Include="Event.cpp">
       <Filter>Source Files\Models\Events</Filter>
     </ClCompile>
-    <ClCompile Include="DataStorage.cpp">
-      <Filter>Source Files\Models\Storages</Filter>
-    </ClCompile>
     <ClCompile Include="EventManager.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -99,9 +96,6 @@
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="Event.h">
-      <Filter>Header Files\Models</Filter>
-    </ClInclude>
-    <ClInclude Include="DataStorage.h">
       <Filter>Header Files\Models</Filter>
     </ClInclude>
     <ClInclude Include="EventManager.h">

@@ -1,14 +1,20 @@
-#define UNICODE
+﻿#define UNICODE
+
 #include "ContactBookDialog.h"
 #include "ContactInputDialog.h"
 #include <commctrl.h>
 #include <commdlg.h>  // Required for the file dialog
 #include "resource.h"
+//#include <shlwapi.h>  // For PathFileExists
+//#pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "comctl32.lib")
 
 HFONT ContactBookDialog::hFont = nullptr;
 int ContactBookDialog::currentTheme = 0;
 ContactBook* ContactBookDialog::contactBook = nullptr;
+std::wstring lastFile;
+size_t filteredContactsCount = 0;
+Contact* filteredContacts = nullptr;
 
 void ContactBookDialog::Show(HWND parent, HINSTANCE hInst, int theme)
 {
@@ -22,17 +28,22 @@ INT_PTR CALLBACK ContactBookDialog::DialogProc(HWND hDlg, UINT message, WPARAM w
 {
 	switch (message)
 	{
-	case WM_INITDIALOG: {
-		currentTheme = (int)lParam;
-		hFont = AppStyles::GetDefaultButtonFont();
-		InitializeControls(hDlg);
-		UIHelpers::ApplyTheme(hDlg, currentTheme, false);
-		InitializeComboboxes(hDlg);
-
-		RegisterHotkeys(hDlg);
-
+	case WM_INITDIALOG: 
+	{
+		InitializeContactBookDialog(lParam, hDlg);
 		return TRUE;
 	}
+
+	case WM_ACTIVATE:
+		if (wParam == WA_INACTIVE)
+		{
+			UnregisterHotkeys(hDlg);
+		}
+		else
+		{
+			RegisterHotkeys(hDlg);
+		}
+		break;
 
 	case WM_DRAWITEM:
 		if (UIHelpers::DrawThemedButton((LPDRAWITEMSTRUCT)lParam, currentTheme))
@@ -53,13 +64,14 @@ INT_PTR CALLBACK ContactBookDialog::DialogProc(HWND hDlg, UINT message, WPARAM w
 		return (LRESULT)CreateSolidBrush(AppStyles::GetThemeColors(currentTheme).windowBg);
 	}
 
-	case WM_HOTKEY: {
-		// Forward hotkey messages as if they were menu commands
+	case WM_HOTKEY: 
+	{
 		SendMessage(hDlg, WM_COMMAND, MAKEWPARAM(wParam, 0), 0);
 		return TRUE;
 	}
 
-	case WM_COMMAND: {
+	case WM_COMMAND: 
+	{
 		if (MenuHelpers::HandleMenuCommand(hDlg, wParam, lParam))
 		{
 			if (HandleConcreteMenuCommand(wParam, hDlg) == TRUE) return TRUE;
@@ -75,15 +87,36 @@ INT_PTR CALLBACK ContactBookDialog::DialogProc(HWND hDlg, UINT message, WPARAM w
 			break;
 		}
 
-		case IDC_SORT_BUTTON: {
-			// Sort by selected column implementation would go here
+		case IDC_SORT_BUTTON:
+		{
+			HWND hSortCombo = GetDlgItem(hDlg, IDC_SORT_COLUMN_COMBO);
+			int selected = (int)SendMessage(hSortCombo, CB_GETCURSEL, 0, 0);
+
+			if (selected != CB_ERR)
+			{
+				// Map combobox selection to SortType
+				ContactBook::SortType sortType = GetSortTypeFromColumnIndex(selected);
+
+				// Perform the sorting
+				contactBook->SortContacts(sortType);
+
+				// Refresh the list view
+				LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
+			}
 			break;
 		}
-		case IDC_RESET_BUTTON: {
-			// Reset filters/sorting implementation would go here
+
+		case IDC_RESET_BUTTON:
+		{
+			contactBook->DiscardChanges();
+			DisposeFilteredContacts();
+			ResetUI(hDlg);
+			LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
 			break;
 		}
-		case IDC_CONTACTS_ADD_CONTACT: {
+
+		case IDC_CONTACTS_ADD_CONTACT: 
+		{
 			Contact newContact;
 			if (ContactInputDialog::Show(hDlg, newContact, currentTheme))
 			{
@@ -93,20 +126,23 @@ INT_PTR CALLBACK ContactBookDialog::DialogProc(HWND hDlg, UINT message, WPARAM w
 			break;
 		}
 
-		case IDC_CONTACTS_DELETE_CONTACT: {
-			HWND hList = GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST);
-			int selected = ListView_GetNextItem(hList, -1, LVNI_SELECTED);
-			if (selected != -1)
-			{
-				contactBook->DeleteContact(selected);
-				LoadContactsToListView(hList);
-			}
+		case IDC_CONTACTS_DELETE_CONTACT:
+		{
+			DeleteSelectedContact(hDlg);
 			break;
 		}
 
 		case IDC_CONTACTS_FILTER:
-			contactBook->FilterContacts(L"work");
+		{
+			FilterContactsByTag(hDlg);
 			break;
+		}
+
+		case IDC_CONTACTS_TOGGLE_FAVORITE:
+		{
+			ToggleFavoriteContactStatus(hDlg);
+			break;
+		}
 
 		case ID_CONTACTS_CLOSE:
 			EndDialog(hDlg, ID_CONTACTS_CLOSE);
@@ -119,7 +155,7 @@ INT_PTR CALLBACK ContactBookDialog::DialogProc(HWND hDlg, UINT message, WPARAM w
 		if (wParam == 1)
 		{
 			KillTimer(hDlg, 1);
-			SetDlgItemText(hDlg, IDC_COPY_BUTTON, L"��������");
+			SetDlgItemText(hDlg, IDC_COPY_BUTTON, L"Копіювати");
 		}
 		break;
 
@@ -132,17 +168,194 @@ INT_PTR CALLBACK ContactBookDialog::DialogProc(HWND hDlg, UINT message, WPARAM w
 		break;
 
 	case WM_CLOSE:
-		delete contactBook;
-		contactBook = nullptr;
+		Dispose(hDlg);
 		EndDialog(hDlg, ID_CONTACTS_CLOSE);
 		return TRUE;
 
 	case WM_DESTROY:
-		//UnregisterHotkeys(hDlg);
+		UnregisterHotkeys(hDlg);
 		if (hFont) DeleteObject(hFont);
 		break;
 	}
 	return FALSE;
+}
+
+void ContactBookDialog::InitializeContactBookDialog(LPARAM lParam, HWND& hDlg)
+{
+	currentTheme = (int)lParam;
+	hFont = AppStyles::GetDefaultButtonFont();
+	InitializeControls(hDlg);
+	UIHelpers::ApplyTheme(hDlg, currentTheme, false);
+	InitializeComboboxes(hDlg);
+
+	if (!LoadContactBookFromFile(hDlg, lastFile, false))
+	{
+		// Get path to executable
+		wchar_t exePath[MAX_PATH];
+		GetModuleFileName(NULL, exePath, MAX_PATH);
+
+		// Extract directory path
+		wchar_t* lastSlash = wcsrchr(exePath, L'\\');
+		if (lastSlash) *lastSlash = L'\0';
+
+		// Create default filename
+		std::wstring defaultFile = std::wstring(exePath) + L"\\contacts.txt";
+
+		if (!LoadContactBookFromFile(hDlg, defaultFile, false))
+		{
+			if (contactBook->SaveToFile(defaultFile))
+			{
+				lastFile = defaultFile;
+			}
+		}
+		else
+		{
+			lastFile = defaultFile;
+		}
+	}
+	RegisterHotkeys(hDlg);
+}
+
+void ContactBookDialog::ToggleFavoriteContactStatus(HWND hDlg)
+{
+	HWND hList = GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST);
+	int selectedIndex = ListView_GetNextItem(hList, -1, LVNI_SELECTED);
+
+	if (selectedIndex != -1)
+	{
+		// Get the contact reference from the list view
+		LVITEM lvi = { 0 };
+		lvi.mask = LVIF_PARAM;
+		lvi.iItem = selectedIndex;
+		ListView_GetItem(hList, &lvi);
+
+		Contact* pContact = reinterpret_cast<Contact*>(lvi.lParam);
+
+		if (pContact)
+		{
+			// Toggle by reference
+			contactBook->ToggleFavorite(*pContact);
+
+			if (filteredContacts != nullptr)
+			{
+				FilterContactsByTag(hDlg);
+			}
+
+			LoadContactsToListView(hList);
+		}
+	}
+	else
+	{
+		MessageBox(hDlg,
+			L"Будь ласка, виберіть контакт для зміни статусу 'Обраний'",
+			L"Не вибрано контакт",
+			MB_ICONINFORMATION);
+	}
+}
+
+void ContactBookDialog::ResetUI(HWND hDlg)
+{
+	SetDlgItemText(hDlg, IDC_FILTER_EDIT, L"");
+	SetDlgItemText(hDlg, IDC_FILTER_STATUS, L"Фільтрування за тегом");
+}
+
+void ContactBookDialog::FilterContactsByTag(HWND hDlg)
+{
+	HWND hFilterEdit = GetDlgItem(hDlg, IDC_FILTER_EDIT);
+	wchar_t filterText[256] = { 0 };
+	GetWindowText(hFilterEdit, filterText, 256);
+
+
+	DisposeFilteredContacts();
+
+	filteredContacts = contactBook->FilterContacts(filterText, filteredContactsCount);
+
+	// Refresh the list view
+	LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
+
+	// Show how many contacts are visible
+	std::wstring status;
+
+	if (filteredContacts != nullptr)
+	{
+		status = L"Знайдено контактів : " + std::to_wstring(filteredContactsCount);
+	}
+	else
+	{
+		status = L"Фільтрування за тегом";
+	}
+
+	SetDlgItemText(hDlg, IDC_FILTER_STATUS, status.c_str());
+}
+
+void ContactBookDialog::DeleteSelectedContact(HWND hDlg)
+{
+	HWND hList = GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST);
+	int selectedIndex = ListView_GetNextItem(hList, -1, LVNI_SELECTED);
+
+	if (selectedIndex != -1)
+	{
+		LVITEM lvi = { 0 };
+		lvi.mask = LVIF_PARAM;
+		lvi.iItem = selectedIndex;
+		ListView_GetItem(hList, &lvi);
+
+		Contact* pContact = reinterpret_cast<Contact*>(lvi.lParam);
+
+		if (pContact)
+		{
+			if (contactBook->DeleteContactByReference(*pContact))
+			{
+				// Refresh the list view
+				FilterContactsByTag(hDlg);
+				LoadContactsToListView(hList);
+				MessageBox(hDlg, L"Контакт було успішно видалено.", L"Результат операції видалення", MB_OK);
+			}
+			else
+			{
+				MessageBox(hDlg, L"Контакт не було видалено, спробуйте ще раз.", L"Результат операції видалення", MB_ICONERROR);
+			}
+		}
+	}
+	else
+	{
+		MessageBox(hDlg, L"Для видалення контакту, необхідно обрати його з контактної книги.",
+			L"Результат операції видалення", MB_ICONINFORMATION);
+	}
+}
+
+void ContactBookDialog::Dispose(HWND& hDlg)
+{
+	delete contactBook;
+	contactBook = nullptr;
+	DisposeFilteredContacts();
+	ResetUI(hDlg);
+}
+
+void ContactBookDialog::DisposeFilteredContacts()
+{
+	if (filteredContacts != nullptr)
+	{
+		delete[] filteredContacts;
+		filteredContacts = nullptr;
+		filteredContactsCount = 0;
+	}
+}
+
+
+ContactBook::SortType ContactBookDialog::GetSortTypeFromColumnIndex(int columnIndex)
+{
+	switch (columnIndex)
+	{
+	case 0: return ContactBook::SortType::Favorite;
+	case 1: return ContactBook::SortType::Name;
+	case 2: return ContactBook::SortType::Phone;
+	case 3: return ContactBook::SortType::Country;
+	case 4: return ContactBook::SortType::Address;
+	case 5: return ContactBook::SortType::AddedTime;
+	case 6: return ContactBook::SortType::Tags;
+	default: return ContactBook::SortType::Name;
+	}
 }
 
 void ContactBookDialog::UnregisterHotkeys(HWND hDlg)
@@ -156,11 +369,11 @@ void ContactBookDialog::UnregisterHotkeys(HWND hDlg)
 
 void ContactBookDialog::RegisterHotkeys(HWND hDlg)
 {
-	RegisterHotKey(hDlg, IDM_HELP_INSTRUCTIONS, 0, VK_F1);
-	RegisterHotKey(hDlg, IDM_FILE_LOAD, MOD_CONTROL, 'O');
-	RegisterHotKey(hDlg, IDM_FILE_SAVE, MOD_CONTROL, 'S');
-	RegisterHotKey(hDlg, IDM_FILE_SAVEAS, MOD_CONTROL | MOD_SHIFT, 'S');
-	RegisterHotKey(hDlg, IDM_FILE_EXIT, MOD_ALT, VK_F4);
+	RegisterHotKey(hDlg, IDM_HELP_INSTRUCTIONS, MOD_NOREPEAT, VK_F1);
+	RegisterHotKey(hDlg, IDM_FILE_LOAD, MOD_CONTROL | MOD_NOREPEAT, 'O');
+	RegisterHotKey(hDlg, IDM_FILE_SAVE, MOD_CONTROL | MOD_NOREPEAT, 'S');
+	RegisterHotKey(hDlg, IDM_FILE_SAVEAS, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'S');
+	RegisterHotKey(hDlg, IDM_FILE_EXIT, MOD_ALT | MOD_NOREPEAT, VK_F4);
 }
 
 INT_PTR ContactBookDialog::HandleConcreteMenuCommand(WPARAM& wParam, HWND& hDlg)
@@ -182,14 +395,14 @@ INT_PTR ContactBookDialog::HandleConcreteMenuCommand(WPARAM& wParam, HWND& hDlg)
 	break;
 
 
-	case IDM_FILE_SAVE: 
+	case IDM_FILE_SAVE:
 	{
 		if (!contactBook->SaveToCurrentFile())
 		{
 			// If saving to current file fails, show warning and prompt for new file
 			int result = MessageBox(hDlg,
-				L"�� ������� �������� �������� � �������� ����. ������ ������� ����� ���� ��� ����������?",
-				L"������� ����������",
+				L"Неможливо зберегти в поточний файл, можливо він пошкоджений або не існує. Зберегти в новий файл?",
+				L"Збереження контактної книги",
 				MB_YESNO | MB_ICONWARNING);
 
 			if (result == IDYES)
@@ -200,8 +413,8 @@ INT_PTR ContactBookDialog::HandleConcreteMenuCommand(WPARAM& wParam, HWND& hDlg)
 		else
 		{
 			MessageBox(hDlg,
-				L"�������� ������ ���������",
-				L"������ ����������",
+				L"Контактна книга успішно збережена в поточний файл.",
+				L"Збереження контактної книги",
 				MB_OK | MB_ICONINFORMATION);
 		}
 		break;
@@ -243,15 +456,15 @@ void ContactBookDialog::SaveContactBookAs(HWND hDlg)
 		if (contactBook->SaveToFile(szFile))
 		{
 			MessageBox(hDlg,
-				L"�������� ������ ��������� � ����� ����",
-				L"������ ����������",
+				L"Контактна книга успішно збережена.",
+				L"Збереження контактної книги",
 				MB_OK | MB_ICONINFORMATION);
 		}
 		else
 		{
 			MessageBox(hDlg,
-				L"�� ������� �������� �������� � �������� ����",
-				L"������� ����������",
+				L"Неможливо зберегти файл, можливо він пошкоджений або кінцева директорія не існує",
+				L"Збереження контактної книги",
 				MB_OK | MB_ICONERROR);
 		}
 	}
@@ -259,6 +472,10 @@ void ContactBookDialog::SaveContactBookAs(HWND hDlg)
 
 void ContactBookDialog::LoadContactBookFromFile(HWND& hDlg)
 {
+	Dispose(hDlg);
+
+	contactBook = new ContactBook();
+
 	// Initialize the OPENFILENAME structure
 	OPENFILENAME ofn = { 0 };
 	wchar_t szFile[MAX_PATH] = L"";  // Buffer to store the file path
@@ -275,26 +492,39 @@ void ContactBookDialog::LoadContactBookFromFile(HWND& hDlg)
 	// Show the Open dialog
 	if (GetOpenFileName(&ofn))
 	{
-		// Attempt to load the file
-		if (contactBook->LoadFromFile(szFile))
-		{
-			// Refresh the contact list
-			LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
+		LoadContactBookFromFile(hDlg, szFile);
+		lastFile.clear();
+		lastFile.append(szFile);
+	}
+}
 
-			// Show success message in Ukrainian
+bool ContactBookDialog::LoadContactBookFromFile(HWND& hDlg, std::wstring szFile, bool notifyAboutResult)
+{
+	if (contactBook->LoadFromFile(szFile))
+	{
+		LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
+
+		if (notifyAboutResult)
+		{
 			MessageBox(hDlg,
-				L"�������� ������ ����������� � �����",
-				L"������ ������������",
+				L"Контактна книга успішно завантажена з файлу.",
+				L"Завантаження контактної книги",
 				MB_OK | MB_ICONINFORMATION);
 		}
-		else
+
+		return true;
+	}
+	else
+	{
+		if (notifyAboutResult)
 		{
-			// Show error message in Ukrainian
 			MessageBox(hDlg,
-				L"�� ������� ����������� �������� � �����",
-				L"������� ������������",
+				L"Неможливо завантажити файл контактної книги, можливо він пошкоджений або не існує",
+				L"Завантаження контактної книги",
 				MB_OK | MB_ICONERROR);
 		}
+
+		return false;
 	}
 }
 
@@ -322,14 +552,22 @@ void ContactBookDialog::InitializeComboboxes(HWND hDlg)
 	HWND hCopyCombo = GetDlgItem(hDlg, IDC_COPY_COLUMN_COMBO);
 	HWND hSortCombo = GetDlgItem(hDlg, IDC_SORT_COLUMN_COMBO);
 
-	const wchar_t* columns[] = {
-		L"��'�", L"�������", L"�����", L"�����", L"���� ���������", L"����"
+	const wchar_t* sortColumns[] = {
+		L"Обраний", L"Ім'я", L"Телефон", L"Країна", L"Адреса", L"Дата додавання", L"Теги"
 	};
 
-	for (const wchar_t* col : columns)
+	const wchar_t* copyColumns[] = {
+		L"Ім'я", L"Телефон", L"Країна", L"Адреса", L"Дата додавання", L"Теги"
+	};
+
+	for (const wchar_t* col : sortColumns)
+	{
+		SendMessage(hSortCombo, CB_ADDSTRING, 0, (LPARAM)col);
+	}
+
+	for (const wchar_t* col : copyColumns)
 	{
 		SendMessage(hCopyCombo, CB_ADDSTRING, 0, (LPARAM)col);
-		SendMessage(hSortCombo, CB_ADDSTRING, 0, (LPARAM)col);
 	}
 
 	SendMessage(hCopyCombo, CB_SETCURSEL, 0, 0);
@@ -341,6 +579,8 @@ void ContactBookDialog::InitializeControls(HWND hDlg)
 	// Initialize owner-draw buttons
 	UIHelpers::InitOwnerDrawButton(hDlg, IDC_CONTACTS_ADD_CONTACT, hFont);
 	UIHelpers::InitOwnerDrawButton(hDlg, IDC_CONTACTS_DELETE_CONTACT, hFont);
+	UIHelpers::InitOwnerDrawButton(hDlg, IDC_CONTACTS_TOGGLE_FAVORITE, hFont);
+	UIHelpers::InitOwnerDrawButton(hDlg, IDC_CONTACTS_FILTER, hFont);
 	UIHelpers::InitOwnerDrawButton(hDlg, IDC_COPY_BUTTON, hFont);
 	UIHelpers::InitOwnerDrawButton(hDlg, IDC_SORT_BUTTON, hFont);
 	UIHelpers::InitOwnerDrawButton(hDlg, IDC_RESET_BUTTON, hFont);
@@ -356,45 +596,45 @@ void ContactBookDialog::InitializeControls(HWND hDlg)
 
 	// Favorite column
 	lvc.iSubItem = 1;
-	lvc.pszText = const_cast<LPWSTR>(L"�������");
+	lvc.pszText = const_cast<LPWSTR>(L"Обраний");
 	lvc.cx = 70;
 	lvc.fmt = LVCFMT_CENTER;
 	ListView_InsertColumn(hList, 1, &lvc);
 
 	// Name column
 	lvc.iSubItem = 1;
-	lvc.pszText = const_cast<LPWSTR>(L"��'�");
+	lvc.pszText = const_cast<LPWSTR>(L"Ім'я");
 	lvc.cx = 150;
 	lvc.fmt = LVCFMT_LEFT;
 	ListView_InsertColumn(hList, 1, &lvc);
 
 	// Phone column
 	lvc.iSubItem = 2;
-	lvc.pszText = const_cast<LPWSTR>(L"����� ��������");
+	lvc.pszText = const_cast<LPWSTR>(L"Номер телефону");
 	lvc.cx = 120;
 	ListView_InsertColumn(hList, 2, &lvc);
 
 	// Country column
 	lvc.iSubItem = 3;
-	lvc.pszText = const_cast<LPWSTR>(L"�����");
+	lvc.pszText = const_cast<LPWSTR>(L"Країна");
 	lvc.cx = 100;
 	ListView_InsertColumn(hList, 3, &lvc);
 
 	// Address column
 	lvc.iSubItem = 4;
-	lvc.pszText = const_cast<LPWSTR>(L"������");
+	lvc.pszText = const_cast<LPWSTR>(L"Адреса");
 	lvc.cx = 150;
 	ListView_InsertColumn(hList, 4, &lvc);
 
 	// Date added column
 	lvc.iSubItem = 5;
-	lvc.pszText = const_cast<LPWSTR>(L"���� ���������");
+	lvc.pszText = const_cast<LPWSTR>(L"Дата додавання");
 	lvc.cx = 120;
 	ListView_InsertColumn(hList, 5, &lvc);
 
 	// Tags column
 	lvc.iSubItem = 6;
-	lvc.pszText = const_cast<LPWSTR>(L"����");
+	lvc.pszText = const_cast<LPWSTR>(L"Теги");
 	lvc.cx = 100;
 	ListView_InsertColumn(hList, 6, &lvc);
 
@@ -409,12 +649,27 @@ void ContactBookDialog::LoadContactsToListView(HWND hList)
 	// Clear existing items
 	ListView_DeleteAllItems(hList);
 
-	const Contact* contacts = contactBook->GetContacts();
-	size_t contactCount = contactBook->GetContactCount();
-
 	// Set the list view to Unicode mode
 	ListView_SetUnicodeFormat(hList, TRUE);
 
+	if (filteredContacts == nullptr)
+	{
+		const Contact* contacts = contactBook->GetContacts();
+		size_t contactCount = contactBook->GetContactCount();
+		LoadContactsToListView(hList, contacts, contactCount);
+	}
+	else
+	{
+		LoadContactsToListView(hList, filteredContacts, filteredContactsCount);
+	}
+
+	// Re-enable redraw and force a repaint
+	SendMessage(hList, WM_SETREDRAW, TRUE, 0);
+	RedrawWindow(hList, NULL, NULL, RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
+}
+
+void ContactBookDialog::LoadContactsToListView(HWND& hList, const Contact* contacts, size_t contactCount)
+{
 	for (size_t i = 0; i < contactCount; i++)
 	{
 		const Contact& c = contacts[i];
@@ -422,7 +677,7 @@ void ContactBookDialog::LoadContactsToListView(HWND hList)
 		LVITEM lvi = { 0 };
 		lvi.mask = LVIF_TEXT | LVIF_PARAM;
 		lvi.iItem = (int)i;
-		lvi.lParam = (LPARAM)i;
+		lvi.lParam = (LPARAM)&contacts[i];
 
 		// Insert the item
 		int itemIdx = ListView_InsertItem(hList, &lvi);
@@ -441,14 +696,7 @@ void ContactBookDialog::LoadContactsToListView(HWND hList)
 
 		ListView_SetItemText(hList, itemIdx, 6, const_cast<LPWSTR>(c.tags.c_str()));
 	}
-
-	// Re-enable redraw and force a repaint
-	SendMessage(hList, WM_SETREDRAW, TRUE, 0);
-	RedrawWindow(hList, NULL, NULL, RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
 }
-
-
-
 
 void ContactBookDialog::CopyInfoFromSelectedContact(HWND hDlg)
 {
@@ -459,7 +707,7 @@ void ContactBookDialog::CopyInfoFromSelectedContact(HWND hDlg)
 	int selectedItem = ListView_GetNextItem(hList, -1, LVNI_SELECTED);
 	if (selectedItem == -1)
 	{
-		MessageBox(hDlg, L"����-����� ������ ������� ��� ���������", L"No Selection", MB_ICONINFORMATION);
+		MessageBox(hDlg, L"Спочатку необхідно обрати контакт для копіювання", L"Контакт не обраний", MB_ICONINFORMATION);
 		return;
 	}
 
@@ -467,7 +715,7 @@ void ContactBookDialog::CopyInfoFromSelectedContact(HWND hDlg)
 	int selectedColumn = (int)SendMessage(hCombo, CB_GETCURSEL, 0, 0);
 	if (selectedColumn == CB_ERR)
 	{
-		MessageBox(hDlg, L"����-����� ������ ������� ��� ��������� ���������", L"No Column Selected", MB_ICONINFORMATION);
+		MessageBox(hDlg, L"Спочатку необхідно обрати колонку яку необхідно скопіювати!", L"Колонка не обрана", MB_ICONINFORMATION);
 		return;
 	}
 
@@ -482,7 +730,7 @@ void ContactBookDialog::CopyInfoFromSelectedContact(HWND hDlg)
 	// Check if the target column is empty
 	if (wcslen(buffer) == 0)
 	{
-		MessageBox(hDlg, L"������� �����. �� ����� �������� ���������.", L"Empty Column", MB_ICONWARNING);
+		MessageBox(hDlg, L"Інформація не була скопійована, оскільки колонка порожня.", L"Порожня колонка", MB_ICONWARNING);
 		return;
 	}
 
@@ -509,7 +757,7 @@ void ContactBookDialog::CopyInfoFromSelectedContact(HWND hDlg)
 		CloseClipboard();
 
 		// Show feedback to user
-		std::wstring message = L"����������";
+		std::wstring message = L"Скопійовано";
 		SetDlgItemText(hDlg, IDC_COPY_BUTTON, message.c_str());
 
 		// Reset button text after a short delay

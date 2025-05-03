@@ -132,7 +132,6 @@
     <ClCompile Include="ContactBook.cpp" />
     <ClCompile Include="ContactBookDialog.cpp" />
     <ClCompile Include="ContactInputDialog.cpp" />
-    <ClCompile Include="DataStorage.cpp" />
     <ClCompile Include="DefaultDataSets.h" />
     <ClCompile Include="DialogHandler.cpp" />
     <ClCompile Include="Event.cpp" />
@@ -148,7 +147,6 @@
     <ClInclude Include="ContactBook.h" />
     <ClInclude Include="ContactBookDialog.h" />
     <ClInclude Include="ContactInputDialog.h" />
-    <ClInclude Include="DataStorage.h" />
     <ClInclude Include="DialogHandler.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="EventManager.h" />
