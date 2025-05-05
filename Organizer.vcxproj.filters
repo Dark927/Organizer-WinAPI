@@ -19,9 +19,6 @@
     <Filter Include="Source Files\Models">
       <UniqueIdentifier>{720a6efe-f090-4add-a9f3-1ac01cd48f48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Models\Storages">
-      <UniqueIdentifier>{1178ddfb-7dc3-459e-9abe-52b3565f6278}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Components">
       <UniqueIdentifier>{03778a7f-5f99-4052-8fb1-26014a40e2b5}</UniqueIdentifier>
     </Filter>
@@ -58,6 +55,9 @@
     <Filter Include="Source Files\Dialogs\EventsManager">
       <UniqueIdentifier>{5c8f23cc-fd08-4e90-a588-49ec2204b022}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Models\Controls">
+      <UniqueIdentifier>{dc3cfd42-5c1d-4834-9479-b6e7cdcceeed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -81,9 +81,6 @@
     <ClCompile Include="MenuHelpers.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
-    <ClCompile Include="Alarm.cpp">
-      <Filter>Source Files\Components\EventManager</Filter>
-    </ClCompile>
     <ClCompile Include="EventManager.cpp">
       <Filter>Source Files\Components\EventManager</Filter>
     </ClCompile>
@@ -102,13 +99,13 @@
     <ClCompile Include="EventsDialog.cpp">
       <Filter>Source Files\Dialogs\EventsManager</Filter>
     </ClCompile>
+    <ClCompile Include="HotkeysHandler.cpp">
+      <Filter>Source Files\Models\Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Alarm.h">
-      <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="Event.h">
       <Filter>Header Files\Models</Filter>
@@ -145,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="EventsDialog.h">
       <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="HotkeysHandler.h">
+      <Filter>Header Files\Models</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,17 +1,10 @@
 ﻿  ContactBookDialog.cpp
-D:\ZxcCodding\Organizer\Organizer\ContactBook.h(41,14): warning C4091: 'static ': ignored on left of 'ContactBook::SortType' when no variable is declared
+D:\ZxcCodding\Organizer\Organizer\ContactBook.h(43,15): warning C4091: 'static ': ignored on left of 'ContactBookControl::ContactBook::SortType' when no variable is declared
   (compiling source file 'ContactBookDialog.cpp')
   
   DialogHandler.cpp
-  EventInputDialog.cpp
-  EventManager.cpp
-  EventsDialog.cpp
-D:\ZxcCodding\Organizer\Organizer\EventsDialog.cpp(98,17): warning C4244: 'initializing': conversion from 'LRESULT' to 'int', possible loss of data
-D:\ZxcCodding\Organizer\Organizer\EventsDialog.cpp(150,13): warning C4244: 'initializing': conversion from 'LRESULT' to 'int', possible loss of data
-D:\ZxcCodding\Organizer\Organizer\EventsDialog.cpp(160,18): warning C4244: 'initializing': conversion from 'LRESULT' to 'int', possible loss of data
-D:\ZxcCodding\Organizer\Organizer\EventsDialog.cpp(350,15): warning C4244: 'initializing': conversion from 'LRESULT' to 'int', possible loss of data
   Main.cpp
-D:\ZxcCodding\Organizer\Organizer\ContactBook.h(41,14): warning C4091: 'static ': ignored on left of 'ContactBook::SortType' when no variable is declared
+D:\ZxcCodding\Organizer\Organizer\ContactBook.h(43,15): warning C4091: 'static ': ignored on left of 'ContactBookControl::ContactBook::SortType' when no variable is declared
   (compiling source file 'Main.cpp')
   
 D:\ZxcCodding\Organizer\Organizer\Main.cpp(259,19): warning C4244: '=': conversion from 'WPARAM' to 'int', possible loss of data

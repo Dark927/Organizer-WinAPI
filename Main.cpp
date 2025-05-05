@@ -250,7 +250,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case CONTACTS_BUTTON_ID:
-			ContactBookDialog::Show(hWnd, hInst, currentTheme);
+			ContactBookControl::ContactBookDialog::Show(hWnd, hInst, currentTheme);
 			break;
 
 		case THEME_LIGHT: case THEME_DARK: case THEME_SYSTEM:

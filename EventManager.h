@@ -1,55 +1,72 @@
 #pragma once
 #include "Event.h"
-#include <vector>
-#include <string>
 
-class EventsManager
+namespace EventsManagerControl
 {
-public:
-    // Event management
-    void AddEvent(const Event& event);
-    void DeleteEvent(size_t index);
-    void MarkCompleted(size_t index, bool completed);
-    void ClearPastDueEvents();
-    void UpdateEventsStatus();
-
-    // Recurring events
-    void ProcessRecurringEvents();
-
-    // Sorting
-    enum SortCriteria { Name, Deadline, Importance, CreationDate };
-    void SortEvents(SortCriteria criteria, bool ascending = true);
-
-    // Searching
-    std::vector<Event> SearchByName(const std::wstring& name);
-    std::vector<Event> SearchByDate(const SYSTEMTIME& date);
-
-    // Statistics
-    struct EventStats
+    struct AlarmNotification
     {
-        int total;
-        int completed;
-        float completionRate;
+        const Event* event;
+        AlarmState state;
     };
-    EventStats GetWeeklyStats();
-    EventStats GetMonthlyStats();
 
-    // Persistence
-    bool LoadEvents(const std::wstring& filePath);
-    bool SaveEvents();
-    bool SaveEvents(const std::wstring& filePath);
+    class EventsManager
+    {
+    public:
+        EventsManager();
+        ~EventsManager();
 
-    // Alarm
-    void CheckAlarms();
+        // Event management
+        void AddEvent(const Event& event);
+        void DeleteEvent(size_t index);
+        void ClearPastDueEvents();
+        void UpdateEventsStatus();
 
-    // Access
-    const std::vector<Event>& GetAllEvents();
+        // Recurring events
+        void ProcessRecurringEvents();
 
-private:
-    std::vector<Event> events;
-    std::wstring dataFilePath;
+        // Sorting
+        enum SortCriteria { Name, Deadline, Importance, CreationDate };
+        void SortEvents(SortCriteria criteria, bool ascending = true);
 
-    void Initialize();
-    bool IsPastDue(const Event& event);
-    void UpdateSingleEventStatus(Event& event);
-};
+        // Persistence
+        bool LoadFromFile(const std::wstring& filePath);
+        void UpdateEvent(size_t index, const Event& updatedEvent);
+        bool SaveToCurrentFile();
+        bool SaveToFile(const std::wstring& filePath);
+        void CommitChanges();
+        void DiscardChanges();
+
+        // Alarm notifications
+        void CheckForAlarms();
+        const AlarmNotification* GetActiveAlarms() const;
+        size_t GetActiveAlarmCount() const;
+        void ClearAlarmNotifications();
+
+        // Access
+        const Event* GetCurrentEvents() const;
+        const Event* GetSavedEvents() const;
+        size_t GetCurrentEventCount() const;
+        size_t GetSavedEventCount() const;
+
+    private:
+        Event* savedEvents;
+        Event* currentEvents;
+        size_t savedEventCount;
+        size_t currentEventCount;
+        size_t eventCapacity;
+        std::wstring dataFilePath;
+
+        AlarmNotification* activeAlarms;
+        size_t activeAlarmCount;
+        size_t activeAlarmCapacity;
+
+        void Initialize();
+        void UpdateSingleEventStatus(Event& event);
+        void ResizeEventArray(Event*& array, size_t& count, size_t newCapacity);
+        void ResizeAlarmArray(size_t newCapacity);
+        void CopyEvents(const Event* source, Event*& dest, size_t count);
+        void AddAlarmNotification(const Event& event, AlarmState state);
+        void ResetAllNotificationStates();
+        void ResetNotificationState(size_t eventIndex);
+    };
+}

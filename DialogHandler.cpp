@@ -94,7 +94,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 
 void ShowEventsDialog(HWND parentWnd, HINSTANCE hInst, int theme)
 {
-	EventsDialog::Show(parentWnd, hInst, theme);
+	EventsManagerControl::EventsDialog::Show(parentWnd, hInst, theme);
 }
 
 #pragma endregion
