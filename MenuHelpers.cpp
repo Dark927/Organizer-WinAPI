@@ -1,11 +1,6 @@
 #include "MenuHelpers.h"
 #include "resource.h"
 
-void MenuHelpers::InitializeFileMenu(HMENU hMenu)
-{
-	// Can be extended for dynamic menu items
-}
-
 bool MenuHelpers::HandleMenuCommand(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	switch (LOWORD(wParam))

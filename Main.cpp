@@ -2,30 +2,8 @@
 
 #include <windows.h>
 #include "resource.h"
-#include <commctrl.h>                   // Required for the DateTimePicker control
-#include <stdio.h>                      // Required for snprintf
-#include <tchar.h>                      // Required for TCHAR support
-#include "Event.h"                    
-#include "AppStyles.h"
-#include "EventManager.h"              
 #include "DialogHandler.h"
 #include "ContactBookDialog.h"
-#include "UIHelpers.h"
-#pragma comment(lib, "comctl32.lib")
-
-
-// >> Defines
-
-#define CONTEXT_MENU_ABOUT_ID 101
-#define EVENTS_BUTTON_ID 102
-#define CONTACTS_BUTTON_ID 103
-
-#ifndef BP_PUSHBUTTON
-#define BP_PUSHBUTTON 1
-#define PBS_NORMAL 1
-#define TMT_TEXTCOLOR 3803
-#endif
-
 
 // >> Global variables
 
@@ -285,18 +263,6 @@ LRESULT CALLBACK TitleProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_ERASEBKGND:
-	{
-		AppStyles::ThemeColors colors = AppStyles::GetThemeColors(currentTheme);
-		HDC hdc = (HDC)wParam;
-		RECT rc;
-		GetClientRect(hWnd, &rc);
-
-		HBRUSH hBrush = CreateSolidBrush(colors.windowBg);
-		FillRect(hdc, &rc, hBrush);
-		DeleteObject(hBrush);
-		return 1;  // We handled the background
-	}
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;

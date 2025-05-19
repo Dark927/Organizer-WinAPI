@@ -131,7 +131,7 @@ namespace ContactBookControl
 				GetDlgItemTextW(hDlg, IDC_CONTACT_NAME, buffer, sizeof(buffer));
 				if (wcslen(buffer) == 0)
 				{
-					MessageBoxA(hDlg, "Please enter a name", "Error", MB_ICONERROR);
+					MessageBoxA(hDlg, "Будь-ласка введіть ім'я", "Помилка", MB_ICONERROR);
 					return FALSE;
 				}
 				pData->contact->name = buffer;
@@ -142,8 +142,8 @@ namespace ContactBookControl
 				WideCharToMultiByte(CP_UTF8, 0, buffer, -1, phoneNumberBuffer, bufferSize, nullptr, nullptr);
 				if (!ValidatePhoneNumber(phoneNumberBuffer))
 				{
-					MessageBoxA(hDlg, "Please enter a valid phone number\nFormat: +[country code] [number] or [number with area code]",
-						"Error", MB_ICONERROR);
+					MessageBoxA(hDlg, "Будь-ласка введіть коректний номер телефону\nФормат: +[Код країни] [Номер] або [Номер з локальним кодом]",
+						"Помилка", MB_ICONERROR);
 					return FALSE;
 				}
 				pData->contact->phone = buffer;

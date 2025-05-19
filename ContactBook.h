@@ -74,11 +74,11 @@ namespace ContactBookControl
 		size_t GetContactCount() const;
 		Contact& GetContact(size_t index) const;
 		const Contact* GetContacts() const;
+		bool ContainsPhone(const std::wstring& contactId) const;
 
 	private:
 		void ResizeArray(size_t newCapacity);
 		bool ParseContactLine(const std::wstring& line, Contact& contact);
-		std::wstring SystemTimeToString(const SYSTEMTIME& st) const;
 		SYSTEMTIME StringToSystemTime(const std::wstring& str) const;
 
 		Contact* contacts = nullptr;

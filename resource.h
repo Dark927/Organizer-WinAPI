@@ -27,6 +27,7 @@
 #define IDC_SORT_BUTTON                 309
 #define IDC_RESET_BUTTON                310
 #define IDD_INSTRUCTIONS_DIALOG         311
+#define IDC_RESET_FILTERS_BUTTON        312
 #define IDD_EVENT_INPUT_DIALOG          400
 #define IDC_EVENT_NAME_EDIT             401
 #define IDC_EVENT_DESCRIPTION_EDIT      402
@@ -41,6 +42,9 @@
 #define IDC_EVENT_NAME_COUNT            411
 #define IDC_EVENT_NOTES_COUNT           412
 #define IDC_EVENT_DESC_COUNT            413
+#define CONTEXT_MENU_ABOUT_ID           501
+#define EVENTS_BUTTON_ID                502
+#define CONTACTS_BUTTON_ID              503
 #define IDC_CONTACTS_CONTACT_LIST       1001
 #define IDC_CONTACTS_ADD_CONTACT        1002
 #define IDC_CONTACTS_DELETE_CONTACT     1003
@@ -68,6 +72,7 @@
 #define IDC_CONTACT_INPUT_NAME          1018
 #define IDC_FILTER_STATUS               1018
 #define IDC_CONTACT_INPUT_PHONE         1019
+#define IDC_BUTTON1                     1019
 #define IDC_CONTACT_INPUT_COUNTRYSEARCH 1020
 #define IDC_CONTACT_INPUT_COUNTRY       1021
 #define IDC_CONTACT_INPUT_ADDRESS       1022
@@ -94,7 +99,6 @@
 #define IDC_APPLY_UPDATE_SETTINGS_BTN   2020
 #define IDD_EVENTSMANAGER_HELP_DIALOG   2021
 #define IDC_EVENTSMANAGER_HELP_TEXT     2022
-
 #define IDI_APP_ICON                    5001
 #define IDC_CONTACT_INPUT_LABEL         65535
 
@@ -104,7 +108,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        113
 #define _APS_NEXT_COMMAND_VALUE         40005
-#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_CONTROL_VALUE         1021
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -9,6 +9,7 @@
 #include <ctime>
 #include "UIHelpers.h"
 #include "Utils.h"
+#include <codecvt>
 
 namespace EventsManagerControl
 {
@@ -166,8 +167,11 @@ namespace EventsManagerControl
 
 	bool EventsManager::LoadFromFile(const std::wstring& filePath)
 	{
-		std::wifstream file(filePath.c_str(), std::ios::binary);
+		std::ifstream file(filePath, std::ios::in);
 		if (!file) return false;
+
+		// Create a UTF-8 converter
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 
 		// Clear existing events
 		delete[] savedEvents;
@@ -180,10 +184,13 @@ namespace EventsManagerControl
 
 		dataFilePath = filePath;
 
-		std::wstring line;
+		std::string line;
 		while (std::getline(file, line))
 		{
 			if (line.empty()) continue;
+
+			// Convert the UTF-8 line to wide string
+			std::wstring wideLine = converter.from_bytes(line);
 
 			if (currentEventCount >= eventCapacity)
 			{
@@ -192,7 +199,7 @@ namespace EventsManagerControl
 			}
 
 			Event* event = &currentEvents[currentEventCount];
-			std::wistringstream iss(line);
+			std::wistringstream iss(wideLine);
 			wchar_t sep;
 
 			// Read fields (same as before)
@@ -235,32 +242,36 @@ namespace EventsManagerControl
 		return SaveToFile(dataFilePath);
 	}
 
+
 	bool EventsManager::SaveToFile(const std::wstring& filePath)
 	{
-		std::wofstream file(filePath.c_str(), std::ios::binary);
+		std::ofstream file(filePath, std::ios::out);
 		if (!file) return false;
+
+		// Create a UTF-8 converter
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
 
 		for (size_t i = 0; i < currentEventCount; i++)
 		{
 			const Event* event = &currentEvents[i];
-			file << event->name << L"|"
-				<< event->description << L"|"
-				<< event->notes << L"|"
-				<< event->importance << L"|"
-				<< event->hasAlarm << L"|"
-				<< event->isRecurring << L"|"
-				<< event->recurrenceInterval << L"|"
-				<< event->isPastDue << L"|"
-				<< event->creationDate.wYear << L"|"
-				<< event->creationDate.wMonth << L"|"
-				<< event->creationDate.wDay << L"|"
-				<< event->creationDate.wHour << L"|"
-				<< event->creationDate.wMinute << L"|"
-				<< event->targetDateTime.wYear << L"|"
-				<< event->targetDateTime.wMonth << L"|"
-				<< event->targetDateTime.wDay << L"|"
-				<< event->targetDateTime.wHour << L"|"
-				<< event->targetDateTime.wMinute << L"\n";
+			file << converter.to_bytes(event->name) << "|"
+				<< converter.to_bytes(event->description) << "|"
+				<< converter.to_bytes(event->notes) << "|"
+				<< event->importance << "|"
+				<< event->hasAlarm << "|"
+				<< event->isRecurring << "|"
+				<< event->recurrenceInterval << "|"
+				<< event->isPastDue << "|"
+				<< event->creationDate.wYear << "|"
+				<< event->creationDate.wMonth << "|"
+				<< event->creationDate.wDay << "|"
+				<< event->creationDate.wHour << "|"
+				<< event->creationDate.wMinute << "|"
+				<< event->targetDateTime.wYear << "|"
+				<< event->targetDateTime.wMonth << "|"
+				<< event->targetDateTime.wDay << "|"
+				<< event->targetDateTime.wHour << "|"
+				<< event->targetDateTime.wMinute << "\n";
 		}
 
 		// Update saved events to match current state

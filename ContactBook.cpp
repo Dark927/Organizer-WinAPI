@@ -41,6 +41,18 @@ namespace ContactBookControl
 		capacity = newCapacity;
 	}
 
+	bool ContactBook::ContainsPhone(const std::wstring& phone) const
+	{
+		for (size_t i = 0; i < count; ++i)
+		{
+			if (contacts[i].phone == phone)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void ContactBook::AddContact(const Contact& contact)
 	{
 		if (count >= capacity)
@@ -347,15 +359,6 @@ namespace ContactBookControl
 		}
 
 		return success && tempCount > 0;
-	}
-
-	std::wstring ContactBook::SystemTimeToString(const SYSTEMTIME& st) const
-	{
-		wchar_t buffer[64];
-		swprintf(buffer, 64, L"%04d-%02d-%02d %02d:%02d:%02d",
-			st.wYear, st.wMonth, st.wDay,
-			st.wHour, st.wMinute, st.wSecond);
-		return buffer;
 	}
 
 	SYSTEMTIME ContactBook::StringToSystemTime(const std::wstring& str) const

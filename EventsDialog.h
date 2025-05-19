@@ -29,7 +29,6 @@ namespace EventsManagerControl
 		static void LoadEventsFromFile(HWND hDlg);
 		static void SaveEventsToFileAs(HWND hDlg);
 		
-		static void SetAlarmForSelectedEvent(HWND hDlg);
 		static bool IsSelectedDateTimeInPast(HWND hDlg);
 
 		static void ShowInstructions(HWND hDlg);

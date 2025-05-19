@@ -2,7 +2,6 @@
 #define _UNICODE
 
 #include "EventsDialog.h"
-#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include "resource.h"
@@ -10,8 +9,6 @@
 #include "HotkeysHandler.h"
 #include "EventInputDialog.h"
 #include <richedit.h>
-#include <commctrl.h>
-#pragma comment(lib, "comctl32.lib")
 
 namespace EventsManagerControl
 {
@@ -771,27 +768,6 @@ namespace EventsManagerControl
 
 
 #pragma region Alarm Clock
-
-	void EventsDialog::SetAlarmForSelectedEvent(HWND hDlg)
-	{
-		int selected = SendDlgItemMessage(hDlg, IDC_EVENTS_LIST, LB_GETCURSEL, 0, 0);
-		if (selected == LB_ERR)
-		{
-			MessageBoxW(hDlg, L"Будь ласка, виберіть подію для налаштування сповіщення",
-				L"Попередження", MB_ICONWARNING);
-			return;
-		}
-
-		const Event* allEvents = eventsManager->GetCurrentEvents();
-		int eventsCount = eventsManager->GetCurrentEventCount();
-
-		if (selected >= 0 && selected < eventsCount)
-		{
-			const Event& event = allEvents[selected];
-			std::wstring message = L"Сповіщення для події: " + event.name;
-			MessageBoxW(hDlg, message.c_str(), L"Сповіщення встановлено", MB_ICONINFORMATION);
-		}
-	}
 
 	void EventsDialog::CheckAndShowAlarms(HWND hDlg)
 	{

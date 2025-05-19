@@ -5,6 +5,7 @@
 #include <commctrl.h>
 #include <commdlg.h> 
 #include "resource.h"
+
 #include "Utils.h"
 #include "HotkeysHandler.h"
 #pragma comment(lib, "comctl32.lib")
@@ -117,13 +118,31 @@ namespace ContactBookControl
 				break;
 			}
 
+			case IDC_RESET_FILTERS_BUTTON:
+			{
+				DisposeFilteredContacts();
+				ResetUI(hDlg);
+				LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
+				break;
+			}
+
 			case IDC_CONTACTS_ADD_CONTACT:
 			{
 				Contact newContact;
 				if (ContactInputDialog::Show(hDlg, newContact, currentTheme))
 				{
-					contactBook->AddContact(newContact);
-					LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
+					if (contactBook->ContainsPhone(newContact.phone))
+					{
+						MessageBox(hDlg,
+							L"Не вдалося додати контакт, оскільки такий номер вже існує у контактній книзі!",
+							L"Контакт існує",
+							MB_ICONINFORMATION);
+					}
+					else
+					{
+						contactBook->AddContact(newContact);
+						LoadContactsToListView(GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST));
+					}
 				}
 				break;
 			}
@@ -158,14 +177,6 @@ namespace ContactBookControl
 			{
 				KillTimer(hDlg, 1);
 				SetDlgItemText(hDlg, IDC_COPY_BUTTON, L"Копіювати");
-			}
-			break;
-
-		case WM_KEYDOWN:
-			if (wParam == VK_F1)
-			{
-				PostMessage(hDlg, WM_COMMAND, IDM_HELP_INSTRUCTIONS, 0);
-				return 0;
 			}
 			break;
 
@@ -309,7 +320,10 @@ namespace ContactBookControl
 				if (contactBook->DeleteContactByReference(*pContact))
 				{
 					// Refresh the list view
-					FilterContactsByTag(hDlg);
+					if (filteredContacts != nullptr)
+					{
+						FilterContactsByTag(hDlg);
+					}
 					LoadContactsToListView(hList);
 					MessageBox(hDlg, L"Контакт було успішно видалено.", L"Результат операції видалення", MB_OK);
 				}
@@ -552,6 +566,7 @@ namespace ContactBookControl
 		UIHelpers::InitOwnerDrawButton(hDlg, IDC_SORT_BUTTON, hFont);
 		UIHelpers::InitOwnerDrawButton(hDlg, IDC_RESET_BUTTON, hFont);
 		UIHelpers::InitOwnerDrawButton(hDlg, ID_CONTACTS_CLOSE, hFont);
+		UIHelpers::InitOwnerDrawButton(hDlg, IDC_RESET_FILTERS_BUTTON, hFont);
 
 		// Initialize ListView
 		HWND hList = GetDlgItem(hDlg, IDC_CONTACTS_CONTACT_LIST);

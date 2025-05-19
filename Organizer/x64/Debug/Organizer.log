@@ -2,11 +2,14 @@
 D:\ZxcCodding\Organizer\Organizer\ContactBook.h(43,15): warning C4091: 'static ': ignored on left of 'ContactBookControl::ContactBook::SortType' when no variable is declared
   (compiling source file 'ContactBookDialog.cpp')
   
-  DialogHandler.cpp
+  ContactInputDialog.cpp
+D:\ZxcCodding\Organizer\Organizer\ContactBook.h(43,15): warning C4091: 'static ': ignored on left of 'ContactBookControl::ContactBook::SortType' when no variable is declared
+  (compiling source file 'ContactInputDialog.cpp')
+  
   Main.cpp
 D:\ZxcCodding\Organizer\Organizer\ContactBook.h(43,15): warning C4091: 'static ': ignored on left of 'ContactBookControl::ContactBook::SortType' when no variable is declared
   (compiling source file 'Main.cpp')
   
-D:\ZxcCodding\Organizer\Organizer\Main.cpp(259,19): warning C4244: '=': conversion from 'WPARAM' to 'int', possible loss of data
+D:\ZxcCodding\Organizer\Organizer\Main.cpp(237,19): warning C4244: '=': conversion from 'WPARAM' to 'int', possible loss of data
   Generating Code...
   Organizer.vcxproj -> D:\ZxcCodding\Organizer\Organizer\x64\Debug\Organizer.exe
